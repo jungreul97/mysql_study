@@ -126,3 +126,65 @@ SELECT 직위, COUNT(직위), GROUP_CONCAT(이름 SEPARATOR ',') AS 사원이름
 FROM 사원
 GROUP BY 직위
 ORDER BY 직위;
+
+-- WITH ROLLUP : 소계와 총계를 구하는 
+SELECT * FROM 고객;
+
+SELECT 도시, COUNT(*) AS 고객수
+FROM 고객
+WHERE 지역 IS NULL
+GROUP BY 도시
+WITH ROLLUP;
+
+-- NULL 란에 '총계' 문구를 넣어주자
+SELECT IFNULL(도시,"총계") AS 도시
+	, COUNT(*) AS 고객수
+    , AVG(마일리지) AS 마일리지평균
+FROM 고객
+WHERE 지역 IS NULL
+GROUP BY 도시
+WITH ROLLUP;
+
+-- 강사님 코드
+SELECT IFNULL(도시, '총계') AS 도시
+	,COUNT(*) AS 고객수
+	,AVG(마일리지) AS 평균마일리지
+FROM 고객
+WHERE 지역 IS NULL
+GROUP BY 도시
+WITH ROLLUP;
+
+select *
+from 고객;
+
+
+
+
+
+SELECT 담당자직위, 도시, COUNT(*) AS 고객수
+FROM 고객
+WHERE 담당자직위 LIKE "%마케팅%"
+GROUP BY 1,2
+WITH ROLLUP;
+
+SELECT 지역, COUNT(*) AS 고객수, GROUPING(지역) AS 구분 -- 1이면 ROLLUP 행, 0 이면 아님
+FROM 고객
+WHERE 담당자직위 = '대표이사'
+GROUP BY 지역
+WITH ROLLUP;
+
+-- GROUP_CONCAT() : 여러행의 문자열을 결합해줌
+SELECT GROUP_CONCAT(이름)
+FROM 사원;
+-- 고객테이블의 지역 이름을 모두 결합하여 출력
+SELECT GROUP_CONCAT(DISTINCT 지역)
+FROM 고객;
+
+-- 도시별 고객회사명을 단일값으로 반환(연결할때는 콤마를 사용)
+SELECT 도시, GROUP_CONCAT(고객회사명) AS 고객회사명목록
+FROM 고객
+GROUP BY 도시;
+
+USE 세계무역;
+
+
