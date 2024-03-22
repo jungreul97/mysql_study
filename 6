@@ -1,0 +1,112 @@
+-- 서브쿼리
+
+-- 서비쿼리 : SQL문 내부에서 사용하는 SELECT문
+
+-- 단일행 서브쿼리
+-- 최고 마일리지를 보유한 고객의 정보를 구하시오.
+-- 최고 마일리지를 구하기
+SELECT MAX(마일리지)
+FROM 고객;
+
+SELECT * FROM 고객
+WHERE 마일리지 = (SELECT MAX(마일리지) FROM 고객);
+
+-- 주문번호가 'H0250'인 고객회사명과 담당자출력
+SELECT 고객회사명,담당자명
+FROM 고객
+WHERE 고객번호 = (SELECT 고객번호 FROM 주문 WHERE 주문번호 = 'H0250');
+
+-- 다중행 서브쿼리 : 복수행 비교연산자 IN, ANY(SOME), ALL, EXISTS
+
+-- '부산광역시' 고객이 주문한 주문건수를 출력하기
+SELECT COUNT(*) AS 주문건수
+FROM 주문
+WHERE 고객번호 IN (SELECT 고객번호 FROM 고객 WHERE 도시 = '부산광역시');
+
+-- ANY : 마일리지 > 부산마일리지 OR ... OR...OR
+SELECT 담당자명, 고객회사명, 마일리지
+FROM 고객
+WHERE 마일리지 > ANY(SELECT 마일리지 FROM 고객 WHERE 도시 = '부산광역시');
+
+-- ALL : AND ... AND ... AND
+SELECT 담당자명,고객회사명,마일리지
+FROM 고객
+WHERE 마일리지 > ALL( SELECT AVG(마일리지) FROM 고객 WHERE 도시 = '부산광역시' GROUP BY 지역);
+
+-- EXISTS : 행의 존재 여부로 비교
+-- 주문이력이있는 고객의 정보만 출력하기
+SELECT 고객번호, 고객회사명
+FROM 고객
+WHERE EXISTS (SELECT * FROM 주문 WHERE 고객번호 = 고객.고객번호);
+
+-- 인라인 뷰 : FROM절 안의 서브쿼리
+SELECT 고객번호, 담당자명, 마일리지, 고객.도시,도시_평균마일리지,도시_평균마일리지 - 마일리지 AS 차이
+FROM 고객,
+	(
+		SELECT 도시, AVG(마일리지) AS 도시_평균마일리지
+        FROM 고객
+        GROUP BY 도시
+    )AS 도시별요약
+WHERE 고객.도시 = 도시별요약.도시;
+
+SELECT 도시, AVG(마일리지) AS 도시_평균마일리지
+        FROM 고객
+        GROUP BY 도시;
+        
+-- 스칼라 서브쿼리 : 메인 쿼리의 SELECT 문안에 사용되는 서브쿼리
+-- 행을 0개 반환하면 NULL이 되고, 2개이상 반환하면 오류 발생
+SELECT 고객번호, 담당자명, (SELECT MAX(주문일) FROM 주문 WHERE 주문.고객번호 = 고객.고객번호) AS 최종주문일
+FROM 고객;
+
+-- CTE (Common Table Expression)
+-- 원래 있는 테이블처럼 쓰임
+WITH 도시별요약 AS
+(
+	SELECT 도시, AVG(마일리지) AS 도시_평균마일리지
+    FROM 고객
+    GROUP BY 도시
+)
+SELECT 담당자명 ,고객회사명 ,마일리지 ,고객.도시 ,도시_평균마일리지 ,도시_평균마일리지 - 마일리지 AS 차이 
+FROM 고객 ,도시별요약 
+WHERE 고객.도시 = 도시별요약.도시;
+
+-- 연습문제
+-- 1. ‘배재용’ 사원의 부서명을 보이시오.
+SELECT * FROM 사원;
+SELECT 부서명,사원.이름
+FROM 사원,부서
+WHERE 이름 = (SELECT 이름 FROM 사원 JOIN 부서 ON 사원.부서번호 = 부서.부서번호 WHERE 이름 = '배재용');
+
+-- 2.한번도 주문한 적이 없는 제품의 정보를 보이시오.
+SELECT 제품.* 
+FROM 제품
+
+
+
+
+
+
+
+
+
+        
+
+    
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
